@@ -47,9 +47,9 @@
             box-shadow: 0 10px 25px -5px rgba(236, 72, 153, 0.1);
         }
 
-        /* Modo Reduzido */
+        /* Layout Reduzido: Gráfico à esquerda, Texto à direita */
         .shrunk #dashboard-card {
-            padding: 0.6rem 1.25rem !important;
+            padding: 0.5rem 1rem !important;
             border-radius: 1.5rem;
         }
 
@@ -63,6 +63,7 @@
             width: 50px !important;
             height: 50px !important;
             margin-bottom: 0 !important;
+            margin-left: 0 !important;
         }
 
         .shrunk #score-val {
@@ -138,7 +139,7 @@
 </head>
 <body class="pb-36">
 
-    <!-- ABA: HOJE -->
+    <!-- ABA: HOJE (DIÁRIO) -->
     <div id="view-today" class="view-section space-y-4">
         
         <header class="content-width flex justify-between items-center pt-4 pb-2">
@@ -154,24 +155,26 @@
         <!-- DASHBOARD STICKY -->
         <div id="sticky-header" class="content-width">
             <div id="dashboard-card" class="glass-card p-6 transition-all duration-300">
-                <h2 id="dashboard-title" class="text-[10px] font-black text-center text-slate-400 uppercase tracking-[0.2em] mb-4">Disciplina do Dia</h2>
+                <h2 id="dashboard-title" class="text-[10px] font-black text-center text-slate-400 uppercase tracking-[0.2em] mb-4">Disciplina Diária</h2>
                 
                 <div id="dashboard-inner" class="flex flex-col items-center justify-center w-full">
+                    <!-- Gráfico circular (Esquerda no modo shrunk) -->
                     <div id="score-svg-container" class="relative w-36 h-36 mb-2 transition-all duration-300">
                         <svg class="w-full h-full" viewBox="0 0 100 100">
                             <circle class="text-orange-50" stroke-width="10" stroke="currentColor" fill="transparent" r="42" cx="50" cy="50" />
                             <circle id="score-circle" class="text-pink-500 progress-ring-circle" stroke-width="10" stroke-dasharray="263.89" stroke-dashoffset="263.89" stroke-linecap="round" stroke="currentColor" fill="transparent" r="42" cx="50" cy="50" />
                         </svg>
                         <div class="absolute inset-0 flex flex-col items-center justify-center">
-                            <span id="score-val" class="text-4xl font-black text-slate-800 tracking-tighter">0%</span>
+                            <span id="score-val" class="text-4xl font-black text-slate-800 tracking-tighter transition-all">0%</span>
                             <span id="score-msg" class="text-[9px] font-bold uppercase text-pink-400">Status</span>
                         </div>
                     </div>
 
+                    <!-- Informações (Direita no modo shrunk) -->
                     <div id="mini-info" class="hidden">
-                        <span id="mini-status-text" class="text-[10px] font-black uppercase text-pink-500">Nota</span>
+                        <span id="mini-status-text" class="text-[10px] font-black uppercase text-pink-500">Nota Final</span>
                         <div class="flex flex-col text-[11px] font-bold text-slate-600 leading-tight">
-                            <span id="mini-attainment">Meta: 0%</span>
+                            <span id="mini-attainment">Ating.: 0%</span>
                             <span id="mini-penalty" class="text-red-500">Saídas: 0</span>
                         </div>
                     </div>
@@ -215,7 +218,7 @@
         <header class="flex justify-between items-end mb-6">
             <div>
                 <h1 class="text-3xl font-black text-slate-800 tracking-tight">Histórico</h1>
-                <p class="text-sm text-slate-500 font-medium">Sua evolução</p>
+                <p class="text-sm text-slate-500 font-medium">Sua evolução semanal</p>
             </div>
             <div class="text-right bg-white p-2 rounded-2xl border border-slate-100 shadow-sm">
                 <p class="text-[9px] font-black text-slate-400 uppercase">Média Geral</p>
@@ -246,13 +249,22 @@
                     <button id="edit-past-btn" class="text-[10px] font-bold text-pink-500 underline uppercase">Editar dia</button>
                 </div>
             </div>
+            
             <div id="det-meals-grid" class="grid grid-cols-1 gap-2 border-t pt-4"></div>
-            <div id="det-notes-section" class="border-t pt-4 hidden"><p id="det-notes-text" class="text-xs text-slate-600 italic"></p></div>
-            <div id="det-slips-section" class="border-t pt-4 hidden"><div id="det-slips-list" class="flex flex-wrap gap-2"></div></div>
+
+            <div id="det-notes-section" class="border-t pt-4 hidden">
+                <p class="text-[10px] font-black text-slate-400 uppercase mb-1">Anotações</p>
+                <p id="det-notes-text" class="text-xs text-slate-600 italic"></p>
+            </div>
+
+            <div id="det-slips-section" class="border-t pt-4 hidden">
+                <p class="text-[10px] font-black text-slate-400 uppercase mb-2">Saídas</p>
+                <div id="det-slips-list" class="flex flex-wrap gap-2"></div>
+            </div>
         </div>
     </div>
 
-    <!-- MENU INFERIOR -->
+    <!-- NAVEGAÇÃO -->
     <nav class="fixed bottom-6 left-1/2 -translate-x-1/2 content-width px-1 z-50">
         <div class="glass-card shadow-2xl p-1.5 flex items-center bg-white/95 w-full">
             <button onclick="loadDay(new Date())" id="tab-today" class="nav-btn active flex-1 py-3 flex flex-col items-center gap-1 rounded-2xl transition-all">
@@ -267,7 +279,7 @@
     </nav>
 
     <script>
-        const STORAGE_KEY = 'diet_tracker_v15_local';
+        const STORAGE_KEY = 'diet_tracker_v16_storage';
         
         // CONFIGURAÇÃO DE PESOS (Total 100%)
         const METAS_CONFIG = [
@@ -276,15 +288,21 @@
             { id: 'almoco', name: 'Almoço', icon: '🍛', weight: 25 },
             { id: 'lanche15', name: 'Lanche 15h', icon: '🥪', weight: 10 },
             { id: 'jantar', name: 'Jantar', icon: '🍲', weight: 25 },
-            { id: 'agua', name: 'Água (Meta)', icon: '💧', weight: 5 },
-            { id: 'exercicio', name: 'Exercício', icon: '💪', weight: 5 }
+            { id: 'agua', name: 'Água', icon: '💧', weight: 5 },
+            { id: 'exercicio', name: 'Exercício', icon: '🏋️‍♂️', weight: 5 }
         ];
 
         let database = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
         let viewMonth = new Date();
         let currentEditingKey = '';
 
-        function getDayKey(d) { return d.toISOString().split('T')[0]; }
+        // FUNÇÃO DE DATA LOCAL (Resolve o erro de pular o dia)
+        function getDayKey(d) { 
+            const year = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
 
         window.addEventListener('scroll', () => {
             const header = document.getElementById('sticky-header');
@@ -293,16 +311,15 @@
         });
 
         function calculateScores(data) {
-            let totalWeightedAttainment = 0;
+            if (!data) return { rawAttainment: 0, penalty: 0, finalScore: 0 };
+            let totalWeighted = 0;
             METAS_CONFIG.forEach(m => {
                 const progress = data.meals?.[m.id]?.progress || 0;
-                totalWeightedAttainment += (progress / 100) * m.weight;
+                totalWeighted += (progress / 100) * m.weight;
             });
-            
-            const rawAttainment = Math.round(totalWeightedAttainment);
+            const rawAttainment = Math.round(totalWeighted);
             const penalty = (data.slips?.length || 0) * 10;
             const finalScore = Math.max(0, rawAttainment - penalty);
-            
             return { rawAttainment, penalty, finalScore };
         }
 
@@ -323,19 +340,19 @@
             document.getElementById('score-val').innerText = `${finalScore}%`;
             document.getElementById('stats-raw').innerText = `${rawAttainment}%`;
             document.getElementById('stats-penalty').innerText = `-${penalty}%`;
-            document.getElementById('mini-attainment').innerText = `Meta: ${rawAttainment}%`;
+            document.getElementById('mini-attainment').innerText = `Ating.: ${rawAttainment}%`;
             document.getElementById('mini-penalty').innerText = `Saídas: ${data.slips.length}`;
 
             const msg = document.getElementById('score-msg');
             if (finalScore >= 75) { msg.innerText = "Excelente!"; msg.style.color = "#10b981"; }
-            else if (finalScore >= 50) { msg.innerText = "Bem!"; msg.style.color = "#f59e0b"; }
+            else if (finalScore >= 50) { msg.innerText = "Bom!"; msg.style.color = "#f59e0b"; }
             else { msg.innerText = "Foco!"; msg.style.color = "#ef4444"; }
         }
 
         function renderDailyView() {
             const dateObj = new Date(currentEditingKey + 'T12:00:00');
             const isToday = currentEditingKey === getDayKey(new Date());
-            document.getElementById('display-date').innerText = isToday ? 'Hoje' : dateObj.toLocaleDateString('pt-BR', { day: 'numeric', month: 'short', year: 'numeric' });
+            document.getElementById('display-date').innerText = isToday ? 'Hoje' : dateObj.toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' });
             
             const container = document.getElementById('meals-container');
             container.innerHTML = '';
@@ -351,7 +368,7 @@
                         <div class="flex-1">
                             <div class="flex justify-between items-center">
                                 <h4 class="font-bold text-slate-700 text-sm">${item.name}</h4>
-                                <span class="text-[9px] font-black text-slate-400 bg-slate-100 px-1.5 rounded-full">PESO: ${item.weight}%</span>
+                                <span class="text-[9px] font-black text-slate-400 bg-slate-100 px-1.5 rounded-full uppercase">Peso: ${item.weight}%</span>
                             </div>
                             <p class="text-[10px] font-black text-slate-300 uppercase">Atingimento: <span class="item-perc text-orange-500">${iData.progress}</span>%</p>
                         </div>
@@ -413,7 +430,7 @@
             document.getElementById('det-date').innerText = new Date(key + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
             const final = data.score || 0, raw = data.rawAttainment || 0, penalty = raw - final;
             document.getElementById('det-score').innerText = `${final}% Disciplina`;
-            document.getElementById('det-math').innerText = `Atingimento: ${raw}% | Pen.: -${penalty}%`;
+            document.getElementById('det-math').innerText = `Ating.: ${raw}% | Pen.: -${penalty}%`;
             
             const mealsGrid = document.getElementById('det-meals-grid');
             mealsGrid.innerHTML = '';
@@ -437,7 +454,7 @@
 
         window.loadDay = (date) => {
             currentEditingKey = getDayKey(date);
-            if (!database[currentEditingKey]) database[currentEditingKey] = { meals: {}, slips: [], notes: '' };
+            if (!database[currentEditingKey]) database[currentEditingKey] = { meals: {}, slips: [], notes: '', score: 0, rawAttainment: 0 };
             changeTab('today');
             renderDailyView();
             updateScoresUI();
@@ -452,9 +469,24 @@
         };
 
         window.saveProgress = () => save();
-        window.saveNotes = () => { database[currentEditingKey].notes = document.getElementById('notes-input').value; localStorage.setItem(STORAGE_KEY, JSON.stringify(database)); };
-        window.addSlip = () => { const i = document.getElementById('slip-input'); if(i.value.trim()) { database[currentEditingKey].slips.unshift({id: Date.now(), text: i.value.trim()}); i.value=''; renderDailyView(); save(); }};
-        window.removeSlip = (id) => { database[currentEditingKey].slips = database[currentEditingKey].slips.filter(s => s.id !== id); renderDailyView(); save(); };
+        window.saveNotes = () => { 
+            database[currentEditingKey].notes = document.getElementById('notes-input').value; 
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(database)); 
+        };
+        
+        window.addSlip = () => { 
+            const i = document.getElementById('slip-input'); 
+            if(i.value.trim()) { 
+                database[currentEditingKey].slips.unshift({id: Date.now(), text: i.value.trim()}); 
+                i.value=''; renderDailyView(); save(); 
+            }
+        };
+        
+        window.removeSlip = (id) => { 
+            database[currentEditingKey].slips = database[currentEditingKey].slips.filter(s => s.id !== id); 
+            renderDailyView(); save(); 
+        };
+
         window.changeTab = (tab) => {
             const isT = tab === 'today';
             document.getElementById('view-today').classList.toggle('hidden', !isT);
@@ -465,9 +497,11 @@
             document.getElementById('tab-history').classList.toggle('text-slate-300', isT);
             if (!isT) renderCalendar();
         };
-        window.navMonth = (dir) => { viewMonth.setMonth(viewMonth.getMonth() + dir); renderCalendar(); };
-        window.resetDaily = () => { if(confirm("Limpar os dados deste dia?")) { database[currentEditingKey] = { meals: {}, slips: [], notes: '' }; save(); renderDailyView(); } };
 
+        window.navMonth = (dir) => { viewMonth.setMonth(viewMonth.getMonth() + dir); renderCalendar(); };
+        window.resetDaily = () => { if(confirm("Deseja zerar os dados registrados para este dia?")) { database[currentEditingKey] = { meals: {}, slips: [], notes: '', score: 0, rawAttainment: 0 }; save(); renderDailyView(); } };
+
+        // Inicializar com o dia de hoje
         loadDay(new Date());
     </script>
 </body>
